@@ -14,9 +14,7 @@ switch (NETWORK) {
     break
   case 'mainnet':
     rocketStorage = '0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46'
-    hotfixAddress = 'tba'
-    console.error(`Mainnet hotfix not yet deployed`)
-    process.exit(1)
+    hotfixAddress = '0x4640b8610f3eFdeb8d44834ADb3228d0E79eaa09'
     break
   default:
     console.error(`Invalid network ${process.env.NETWORK}`)
@@ -125,6 +123,7 @@ async function verifyErrors () {
   const hotfixContract = new ethers.Contract(hotfixAddress, [
     'function errorCount() view returns (uint256)',
     'function errors(uint256) view returns ((address,int256))',
+    'function locked() view returns (bool)',
   ], provider)
 
   const count = (await hotfixContract.errorCount()).toNumber()
@@ -169,6 +168,17 @@ async function verifyErrors () {
   if(verified) {
     console.log(
       `✓ Hotfix at ${hotfixAddress} is correct`.green)
+
+    const locked = await hotfixContract.locked();
+
+    if (locked) {
+      console.log(
+        `✓ Hotfix at ${hotfixAddress} is locked`.green)
+    } else {
+      console.error(
+        `❌ Hotfix at ${hotfixAddress} is not locked`.red)
+    }
+
   } else {
     console.error(
       `❌ Hotfix at ${hotfixAddress} is incorrect`.red)
